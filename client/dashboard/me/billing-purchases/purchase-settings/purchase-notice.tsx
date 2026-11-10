@@ -73,6 +73,7 @@ export function PurchaseNotice( { purchase }: { purchase: Purchase } ) {
 		downgraded,
 		plan_changed,
 		delayed_downgrade_scheduled,
+		free_month,
 		intent,
 	} = purchaseSettingsRoute.useSearch();
 	const navigate = purchaseSettingsRoute.useNavigate();
@@ -105,6 +106,18 @@ export function PurchaseNotice( { purchase }: { purchase: Purchase } ) {
 			} );
 		}
 	}, [ downgraded, navigate ] );
+	const [ showFreeMonthNotice, setShowFreeMonthNotice ] = useState( Boolean( free_month ) );
+	useEffect( () => {
+		if ( free_month ) {
+			navigate( {
+				search: ( prev: Record< string, unknown > ) => {
+					const { free_month: _free_month, ...rest } = prev;
+					return rest;
+				},
+				replace: true,
+			} );
+		}
+	}, [ free_month, navigate ] );
 	// Transient success notice shown after a change-plan checkout (upgrade or
 	// downgrade) redirects back here with `?plan_changed=true`. The param is
 	// stripped immediately so it doesn't survive a refresh or back navigation.
@@ -202,6 +215,14 @@ export function PurchaseNotice( { purchase }: { purchase: Purchase } ) {
 		return (
 			<Notice variant="success" onClose={ () => setShowDowngradedNotice( false ) }>
 				{ __( 'You\u2019ve switched to monthly billing.' ) }
+			</Notice>
+		);
+	}
+
+	if ( showFreeMonthNotice ) {
+		return (
+			<Notice variant="success" onClose={ () => setShowFreeMonthNotice( false ) }>
+				{ __( 'Your free month is added to your account! Enjoy!' ) }
 			</Notice>
 		);
 	}

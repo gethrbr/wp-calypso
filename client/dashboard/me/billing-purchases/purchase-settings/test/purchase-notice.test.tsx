@@ -125,4 +125,36 @@ describe( '<PurchaseNotice />', () => {
 
 		expect( screen.queryByText( /Your subscription is cancelled/ ) ).not.toBeInTheDocument();
 	} );
+
+	test( 'shows the free month notice after a free month is added', async () => {
+		mockSearch = { free_month: true };
+		render( <PurchaseNotice purchase={ makePurchase() } /> );
+
+		expect(
+			await screen.findByText( 'Your free month is added to your account! Enjoy!' )
+		).toBeVisible();
+	} );
+
+	test( 'shows the free month notice after the param is cleared from the URL', async () => {
+		mockSearch = { free_month: true };
+		render( <PurchaseNotice purchase={ makePurchase() } /> );
+
+		await screen.findByText( 'Your free month is added to your account! Enjoy!' );
+		await waitFor( () => expect( mockSearch ).toEqual( {} ) );
+
+		expect( screen.getByText( 'Your free month is added to your account! Enjoy!' ) ).toBeVisible();
+	} );
+
+	test( 'hides the free month notice when it is dismissed', async () => {
+		const user = userEvent.setup();
+		mockSearch = { free_month: true };
+		render( <PurchaseNotice purchase={ makePurchase() } /> );
+
+		await screen.findByText( 'Your free month is added to your account! Enjoy!' );
+		await user.click( screen.getByRole( 'button', { name: 'Dismiss' } ) );
+
+		expect(
+			screen.queryByText( 'Your free month is added to your account! Enjoy!' )
+		).not.toBeInTheDocument();
+	} );
 } );
